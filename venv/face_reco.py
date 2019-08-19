@@ -28,10 +28,6 @@ while rval:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     ret, corners = cv2.findChessboardCorners(frame, (9, 6), None)
 
-
-
-    #if
-
     if ret == True:
 
         objpoints.append(objp)
