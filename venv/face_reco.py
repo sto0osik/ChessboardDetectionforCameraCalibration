@@ -1,20 +1,21 @@
 import numpy as np
 import cv2
-import glob
+
+frame_number = 0
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-objp = np.zeros((6 * 9, 3), np.float32)
+objp = np.zeros((6 * 9, 3), np.float32)  # (6,9) = chessboard size
 objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
 
 objpoints = []
 imgpoints = []
 
 cv2.namedWindow("video preview")
-vc = cv2.VideoCapture(0)
+vc = cv2.VideoCapture(0)  # or cv2.VideoCapture('sourcevideo.avi')
 
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
+out = cv2.VideoWriter('output.avi', fourcc, 20.0, (1080, 720))
 
 if vc.isOpened():
     rval, frame = vc.read()
@@ -23,6 +24,8 @@ else:
 
 while rval:
 
+    # CORNERS DETECTION
+
     cv2.imshow("preview", frame)
     rval, frame = vc.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -30,12 +33,18 @@ while rval:
 
     if ret == True:
 
+        frame_number += 1
+        print(frame_number)
+
         objpoints.append(objp)
         corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners2)
 
         cv2.drawChessboardCorners(frame, (9, 6), corners, ret)
         print(ret)
+
+        # CAMERA CALIBRATION
+
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
         print("ret:", ret)
 
@@ -56,7 +65,7 @@ while rval:
         out.write(frame)
 
     key = cv2.waitKey(20)
-    if key == 27:
+    if key == 27:  # Esc
         break
 
 vc.release()
